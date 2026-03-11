@@ -3,7 +3,6 @@ import torch
 import torchvision.transforms.functional as F
 from packaging import version
 import io
-import os
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -125,9 +124,9 @@ class Florence2:
         self.model_list = model_list
         self.lora_list = lora_list
         self.prompts = prompts
-        self.tasks=list(prompts.keys())
         self.dtype = list(dtype.keys())
         self.attention_list = attention_list
+        self.florence2_model=None
         self.device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.offload_device=torch.device("cpu")
 
@@ -257,14 +256,12 @@ class Florence2:
         mask_pil = Image.fromarray(mask_np, mode='L')
         return mask_pil
 
-    def encode(self, image, text_input, model_path,precision,attention,lora, task, fill_mask, keep_model_loaded, 
-            num_beams, max_new_tokens, do_sample=True, output_mask_select="", seed=None):
-        image=np.array(image) #turn to numpy array
+    def encode(self, image, text_input, florence2_model, task, num_beams, max_new_tokens,
+               fill_mask=False,do_sample=True, output_mask_select="", seed=None):
         # 处理3维张量 (h, w, c)
         height, width, _ = image.shape
         annotated_image_tensor = None
         mask_tensor = None
-        florence2_model = self.loadmodel(model_path, precision, attention, lora)
         processor = florence2_model['processor']
         model = florence2_model['model']
         dtype = florence2_model['dtype']
@@ -301,6 +298,7 @@ class Florence2:
         )
         results = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
         print(results)
+
         # cleanup the special tokens from the final list
         if task == 'ocr_with_region':
             clean_results = str(results)       
@@ -558,13 +556,55 @@ class Florence2:
         else:
             out_mask_tensor = torch.zeros((1,64,64), dtype=torch.float32, device="cpu")
 
-        if not keep_model_loaded:
-            print("Offloading model...")
-            model.to(self.offload_device)
-
-        print(out_tensor.shape)
-        print(out_mask_tensor.shape)
-        out_tensor=self.tensor_to_image(out_tensor)
-        out_mask_tensor=self.mask_tensor_to_image(out_mask_tensor)
-
         return (out_tensor, out_mask_tensor, out_results, out_data)
+    
+    def unload_model(self):
+        if self.florence2_model is None:
+            print("No model is loaded.")
+            return
+
+        model = self.florence2_model['model']
+        model = model.to(self.offload_device)
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            if hasattr(torch.cuda, 'gc'):
+                torch.cuda.gc()
+
+        del self.florence2_model['model']
+        del self.florence2_model['processor']
+        self.florence2_model=None
+        import gc
+        gc.collect()
+
+        print("Model has been offloaded.")
+        return
+
+
+
+    def predict(self,image, model, lora,task,text_input,num_beams,max_tokens,dtype,attention,is_keep_model_loaded,is_show_json,fill_mask=False,output_type="text"):
+        image=np.array(image) #turn to numpy array
+        if self.florence2_model is None:
+            print('loadding model...')
+            self.florence2_model = self.loadmodel(model, dtype, attention, lora)
+        if output_type=="text":
+            output=self.encode(image,text_input,self.florence2_model,task,num_beams,max_tokens)
+            if is_show_json:
+                print("show json:")
+                print(output[3])
+            if not is_keep_model_loaded:
+                print("Offloading model...")
+                self.unload_model()
+            return output[2]
+        elif output_type=="image":
+            output=self.encode(image,text_input,self.florence2_model,task,num_beams,max_tokens,fill_mask=fill_mask)
+            out_tensor=self.tensor_to_image(output[0])
+            out_mask_tensor=self.mask_tensor_to_image(output[1])
+            if is_show_json:
+                print("show json:")
+                print(output[3])
+            if not is_keep_model_loaded:
+                print("Offloading model...")
+                self.unload_model()
+            return out_tensor,out_mask_tensor,output[2]
+        else:
+            raise "'output_type' is not 'text' or 'image'"

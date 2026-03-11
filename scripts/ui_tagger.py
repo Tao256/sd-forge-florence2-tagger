@@ -113,16 +113,16 @@ def get_send_js_code(target_tab_type):
     """
 
 
-def save_tags_to_txt(tags_dict):
-    """將标签保存到 TXT 文件"""
-    tags_dict = eval(tags_dict)
-    if not tags_dict:
-        return
-    for name, tags in tags_dict.items():
-        filename = WD14_DIR / f"{name}.txt"
-        with open(filename, "w") as f:
-            f.write(tags)
-    gr.Info("The label has been successfully saved")
+# def save_tags_to_txt(tags_dict):
+#     """將标签保存到 TXT 文件"""
+#     tags_dict = eval(tags_dict)
+#     if not tags_dict:
+#         return
+#     for name, tags in tags_dict.items():
+#         filename = WD14_DIR / f"{name}.txt"
+#         with open(filename, "w") as f:
+#             f.write(tags)
+#     gr.Info("The label has been successfully saved")
 
 
 def save_image(image, img_type="output"):
@@ -149,144 +149,235 @@ def on_ui_tabs():
     def sync_opts_to_components():
         return [
             # florence2
-            gr.update(value=shared.opts.florence2_model),
-            gr.update(value=shared.opts.florence2_Lora),
-            gr.update(value=shared.opts.florence2_task),
-            gr.update(value=shared.opts.florence2_num_beams),
-            gr.update(value=shared.opts.florence2_max_token),
-            gr.update(value=shared.opts.florence2_dtype),
-            gr.update(value=shared.opts.florence2_attention),
+            gr.update(value=shared.opts.florence2_model_text),
+            gr.update(value=shared.opts.florence2_model_image),
+            gr.update(value=shared.opts.florence2_Lora_text),
+            gr.update(value=shared.opts.florence2_Lora_image),
+            gr.update(value=shared.opts.florence2_task_text),
+            gr.update(value=shared.opts.florence2_task_image),
+            gr.update(value=shared.opts.florence2_num_beams_text),
+            gr.update(value=shared.opts.florence2_num_beams_image),
+            gr.update(value=shared.opts.florence2_max_token_text),
+            gr.update(value=shared.opts.florence2_max_token_image),
+            gr.update(value=shared.opts.florence2_dtype_text),
+            gr.update(value=shared.opts.florence2_dtype_image),
+            gr.update(value=shared.opts.florence2_attention_text),
+            gr.update(value=shared.opts.florence2_attention_image),
+            gr.update(value=shared.opts.florence2_keep_model_loaded_text),
+            gr.update(value=shared.opts.florence2_keep_model_loaded_image),
+            gr.update(value=shared.opts.florence2_show_json_text),
+            gr.update(value=shared.opts.florence2_show_json_image),
             gr.update(value=shared.opts.florence2_fill_mask),
-            gr.update(value=shared.opts.florence2_keep_model_loaded),
         ]
 
     with gr.Blocks(analytics_enabled=False) as tagger_interface:
+        # florence2
         with gr.Tabs(elem_id="tabs"):
-            # florence2
-            with gr.Row():
-                # input
-                with gr.Column(variant="panel"):
-                    input_image_florence2 = gr.Image(
-                        label=I18N["Input Image"][default_lang],
-                        sources=["upload", "webcam"],
-                        type="pil",
-                        height=520,
-                        object_fit="contain",
-                        elem_id="florence2_input_image",
-                    )
-                    with gr.Row():
-                        florence2_model_selector1 = gr.Dropdown(
-                            label=I18N["Select Model"][default_lang],
-                            choices=florence2_backend.model_list,
-                            value=shared.opts.florence2_model,
-                            elem_id="florence2_model_selector",
+            with gr.Tab(label=I18N["Text Output"][default_lang], elem_id="text_output"):
+                with gr.Row():
+                    # input
+                    with gr.Column(variant="panel"):
+                        input_image_florence2_1_1 = gr.Image(
+                            label=I18N["Input Image"][default_lang],
+                            sources=["upload", "webcam"],
+                            type="pil",
+                            height=520,
+                            object_fit="contain",
+                            elem_id="florence2_input_image1_1",
                         )
-                        florence2_lora_selector1 = gr.Dropdown(
-                            label=I18N["Select Lora"][default_lang],
-                            choices=florence2_backend.lora_list,
-                            value=shared.opts.florence2_Lora,
-                            elem_id="florence2_lora_selector",
+                        with gr.Row():
+                            florence2_model_selector1_1 = gr.Dropdown(
+                                label=I18N["Select Model"][default_lang],
+                                choices=florence2_backend.model_list,
+                                value=shared.opts.florence2_model,
+                                elem_id="florence2_model_selector1_1",
+                            )
+                            florence2_lora_selector1_1 = gr.Dropdown(
+                                label=I18N["Select Lora"][default_lang],
+                                choices=florence2_backend.lora_list,
+                                value=shared.opts.florence2_Lora,
+                                elem_id="florence2_lora_selector1_1",
+                            )
+                        florence2_task1_1 = gr.Dropdown(
+                            label=I18N["Select Task"][default_lang],
+                            choices=["caption", "detailed_caption", "more_detailed_caption", "ocr", "docvqa(need text_input)", "prompt_gen_tags", "prompt_gen_mixed_caption", "prompt_gen_analyze", "prompt_gen_mixed_caption_plus"],
+                            value=shared.opts.florence2_task,
+                            elem_id="florence2_task_selector1_1",
                         )
-                    florence2_task1 = gr.Dropdown(
-                        label=I18N["Select Task"][default_lang],
-                        choices=florence2_backend.tasks,
-                        value=shared.opts.florence2_task,
-                        elem_id="florence2_task_selector",
-                    )
-                    florence2_text_input1 = gr.Textbox(
-                        label=I18N["Text Input (for specific tasks)"][default_lang],
-                        lines=2,
-                        placeholder="Only for referring_expression_segmentation, caption_to_phrase_grounding, docvqa",
-                        elem_id="florence2_text_input",
-                    )
-                    with gr.Row():
-                        florence2_num_beams1 = gr.Number(
-                            label=I18N["Num Beams"][default_lang],
-                            value=shared.opts.florence2_num_beams,
-                            minimum=1,
-                            maximum=10,
-                            elem_id="florence2_num_beams_selector",
+                        florence2_text_input1_1 = gr.Textbox(
+                            label=I18N["Text Input (for specific tasks)"][default_lang],
+                            lines=2,
+                            placeholder="Only for referring_expression_segmentation, caption_to_phrase_grounding, docvqa",
+                            elem_id="florence2_text_input1_1",
                         )
-                        florence2_max_token1 = gr.Number(
-                            label=I18N["Max token"][default_lang],
-                            value=shared.opts.florence2_max_token,
-                            minimum=1,
-                            maximum=4096,
-                            elem_id="florence2_max_token_selector",
-                        )
-                    with gr.Row():
-                        florence2_dtype1 = gr.Dropdown(
-                            label=I18N["Select Precision"][default_lang],
-                            choices=florence2_backend.dtype,
-                            value=shared.opts.florence2_dtype,
-                            elem_id="florence2_dtype_selector",
-                        )
-                        florence2_attention1 = gr.Dropdown(
-                            label=I18N["Select Attention Implementation"][default_lang],
-                            choices=florence2_backend.attention_list,
-                            value=shared.opts.florence2_attention,
-                            elem_id="florence2_attention_selector",
-                        )
-                    with gr.Row():
-                        florence2_fill_mask1 = gr.Checkbox(label=I18N["Fill Mask"][default_lang], value=shared.opts.florence2_fill_mask, elem_id="florence2_fill_mask_selector")
-                        florence2_keep_model_loaded1 = gr.Checkbox(label=I18N["Keep Model Loaded"][default_lang], value=shared.opts.florence2_keep_model_loaded, elem_id="florence2_keep_model_loaded_selector")
-                    florence2_generate_btn1 = gr.Button(value=I18N["Generate"][default_lang], variant="primary", elem_id="florence2_generate_btn")
-                # output
-                with gr.Column(variant="panel"):
-                    florence2_output_img = gr.Image(
-                        label=I18N["Output Image"][default_lang],
-                        type="pil",
-                        height=600,
-                        object_fit="contain",
-                        elem_id="florence2_output_image",
-                    )
-                    florence2_output_mask_img = gr.Image(
-                        label=I18N["Output Mask Image"][default_lang],
-                        type="pil",
-                        height=600,
-                        object_fit="contain",
-                        elem_id="florence2_output_mask_image",
-                    )
-                    with gr.Row():
-                        florence2_save_output_img_btn = gr.Button(I18N["Save Output Image"][default_lang], variant="secondary", elem_id="florence2_save_output_img_btn")
-                        florence2_save_mask_img_btn = gr.Button(I18N["Save Mask Image"][default_lang], variant="secondary", elem_id="florence2_save_mask_img_btn")
-                    florence2_output_data = gr.Textbox(label=I18N["Output Data (JSON)"][default_lang], lines=10, interactive=False, elem_id="florence2_output_data")
-                    florence2_tags_output1 = gr.Textbox(label=I18N["Extracted Tags"][default_lang], lines=5, interactive=False, elem_id="florence2_extracted_tags")
-                    with gr.Row():
-                        florence2_send_to_txt2img = gr.Button(I18N["Send to Txt2Img"][default_lang], elem_id="florence2_send_txt2img_btn")
-                        florence2_send_to_img2img = gr.Button(I18N["Send to Img2Img"][default_lang], elem_id="florence2_send_img2img_btn")
+                        with gr.Row():
+                            florence2_num_beams1_1 = gr.Number(
+                                label=I18N["Num Beams"][default_lang],
+                                value=shared.opts.florence2_num_beams,
+                                minimum=1,
+                                maximum=10,
+                                elem_id="florence2_num_beams_selector1_1",
+                            )
+                            florence2_max_token1_1 = gr.Number(
+                                label=I18N["Max token"][default_lang],
+                                value=shared.opts.florence2_max_token,
+                                minimum=1,
+                                maximum=4096,
+                                elem_id="florence2_max_token_selector1_1",
+                            )
+                        with gr.Row():
+                            florence2_dtype1_1 = gr.Dropdown(
+                                label=I18N["Select Precision"][default_lang],
+                                choices=florence2_backend.dtype,
+                                value=shared.opts.florence2_dtype,
+                                elem_id="florence2_dtype_selector1_1",
+                            )
+                            florence2_attention1_1 = gr.Dropdown(
+                                label=I18N["Select Attention Implementation"][default_lang],
+                                choices=florence2_backend.attention_list,
+                                value=shared.opts.florence2_attention,
+                                elem_id="florence2_attention_selector1_1",
+                            )
+                        with gr.Row():
+                            florence2_keep_model_loaded1_1 = gr.Checkbox(label=I18N["Keep Model Loaded"][default_lang], value=shared.opts.florence2_keep_model_loaded, elem_id="florence2_keep_model_loaded_selector1_1")
+                            florence2_show_json1_1 = gr.Checkbox(label=I18N["Show JSON"][default_lang], value=shared.opts.florence2_show_json_text, elem_id="florence2_is_show_json1_1")
+                        with gr.Row():
+                            florence2_interrogate_btn1_1 = gr.Button(value=I18N["Interrogate"][default_lang], variant="primary", elem_id="florence2_interrogate_btn1_1")
+                            florence2_unload_btn1_1 = gr.Button(value=I18N["Unload Model"][default_lang], variant="secondary", elem_id="florence2_unload_btn1_1")
+                    # output
+                    with gr.Column(variant="panel"):
+                        florence2_tags_output1_1 = gr.Textbox(label=I18N["Extracted Tags"][default_lang], lines=5, interactive=False, elem_id="florence2_extracted_tags1_1")
+                        with gr.Row():
+                            florence2_send_to_txt2img1 = gr.Button(I18N["Send to Txt2Img"][default_lang], elem_id="florence2_send_txt2img_btn1")
+                            florence2_send_to_img2img1 = gr.Button(I18N["Send to Img2Img"][default_lang], elem_id="florence2_send_img2img_btn1")
 
                 # 事件绑定
-                florence2_generate_btn1.click(
-                    fn=florence2_backend.encode,
-                    inputs=[input_image_florence2, florence2_text_input1, florence2_model_selector1,
-                             florence2_dtype1, florence2_attention1, florence2_lora_selector1, florence2_task1, 
-                             florence2_fill_mask1, florence2_keep_model_loaded1, florence2_num_beams1, florence2_max_token1],
-                    outputs=[florence2_output_img, florence2_output_mask_img, florence2_tags_output1, florence2_output_data],
+                florence2_interrogate_btn1_1.click(
+                    fn=partial(florence2_backend.predict, output_type="text"),
+                    inputs=[input_image_florence2_1_1, florence2_model_selector1_1, florence2_lora_selector1_1, florence2_task1_1, florence2_text_input1_1, florence2_num_beams1_1, florence2_max_token1_1, florence2_dtype1_1, florence2_attention1_1, florence2_keep_model_loaded1_1, florence2_show_json1_1],
+                    outputs=[florence2_tags_output1_1],
                 )
-                florence2_send_to_txt2img.click(fn=None, inputs=[], outputs=[], _js=get_send_js_code("txt2img"))
-                florence2_send_to_img2img.click(fn=None,inputs=[],outputs=[],_js=get_send_js_code("img2img"))
-                florence2_save_output_img_btn.click(fn=partial(save_image, img_type="output"),inputs=[florence2_output_img],outputs=[])
-                florence2_save_mask_img_btn.click(fn=partial(save_image, img_type="mask"),inputs=[florence2_output_mask_img],outputs=[])
+                florence2_unload_btn1_1.click(fn=florence2_backend.unload_model, inputs=[], outputs=[])
+                florence2_send_to_txt2img1.click(fn=None, inputs=[], outputs=[], _js=get_send_js_code("txt2img"))
+                florence2_send_to_img2img1.click(fn=None, inputs=[], outputs=[], _js=get_send_js_code("img2img"))
+            with gr.Tab(label=I18N["Image Output"][default_lang], elem_id="image_output"):
+                with gr.Row():
+                    # input
+                    with gr.Column(variant="panel"):
+                        input_image_florence2_1_2 = gr.Image(
+                            label=I18N["Input Image"][default_lang],
+                            sources=["upload", "webcam"],
+                            type="pil",
+                            height=520,
+                            object_fit="contain",
+                            elem_id="florence2_input_image1_2",
+                        )
+                        with gr.Row():
+                            florence2_model_selector1_2 = gr.Dropdown(
+                                label=I18N["Select Model"][default_lang],
+                                choices=florence2_backend.model_list,
+                                value=shared.opts.florence2_model,
+                                elem_id="florence2_model_selector1_2",
+                            )
+                            florence2_lora_selector1_2 = gr.Dropdown(
+                                label=I18N["Select Lora"][default_lang],
+                                choices=florence2_backend.lora_list,
+                                value=shared.opts.florence2_Lora,
+                                elem_id="florence2_lora_selector1_2",
+                            )
+                        florence2_task1_2 = gr.Dropdown(
+                            label=I18N["Select Task"][default_lang],
+                            choices=["region_caption", "dense_region_caption", "region_proposal", "caption_to_phrase_grounding(need text_input)", "referring_expression_segmentation(need text_input)", "ocr_with_region"],
+                            value=shared.opts.florence2_task,
+                            elem_id="florence2_task_selector1_2",
+                        )
+                        florence2_text_input1_2 = gr.Textbox(
+                            label=I18N["Text Input (for specific tasks)"][default_lang],
+                            lines=2,
+                            placeholder="Only for referring_expression_segmentation, caption_to_phrase_grounding, docvqa",
+                            elem_id="florence2_text_input1_2",
+                        )
+                        with gr.Row():
+                            florence2_num_beams1_2 = gr.Number(
+                                label=I18N["Num Beams"][default_lang],
+                                value=shared.opts.florence2_num_beams,
+                                minimum=1,
+                                maximum=10,
+                                elem_id="florence2_num_beams_selector1_2",
+                            )
+                            florence2_max_token1_2 = gr.Number(
+                                label=I18N["Max token"][default_lang],
+                                value=shared.opts.florence2_max_token,
+                                minimum=1,
+                                maximum=4096,
+                                elem_id="florence2_max_token_selector1_2",
+                            )
+                        with gr.Row():
+                            florence2_dtype1_2 = gr.Dropdown(
+                                label=I18N["Select Precision"][default_lang],
+                                choices=florence2_backend.dtype,
+                                value=shared.opts.florence2_dtype,
+                                elem_id="florence2_dtype_selector1_2",
+                            )
+                            florence2_attention1_2 = gr.Dropdown(
+                                label=I18N["Select Attention Implementation"][default_lang],
+                                choices=florence2_backend.attention_list,
+                                value=shared.opts.florence2_attention,
+                                elem_id="florence2_attention_selector1_2",
+                            )
+                        with gr.Row():
+                            florence2_fill_mask1 = gr.Checkbox(label=I18N["Fill Mask"][default_lang], value=shared.opts.florence2_fill_mask, elem_id="florence2_fill_mask_selector1_2")
+                            florence2_keep_model_loaded1_2 = gr.Checkbox(label=I18N["Keep Model Loaded"][default_lang], value=shared.opts.florence2_keep_model_loaded, elem_id="florence2_keep_model_loaded_selector1_2")
+                            florence2_show_json1_2 = gr.Checkbox(label=I18N["Show JSON"][default_lang], value=shared.opts.florence2_show_json_image, elem_id="florence2_is_show_json1_2")
+                        with gr.Row():
+                            florence2_interrogate_btn1_2 = gr.Button(value=I18N["Interrogate"][default_lang], variant="primary", elem_id="florence2_interrogate_btn1_2")
+                            florence2_unload_btn1_2 = gr.Button(value=I18N["Unload Model"][default_lang], variant="secondary", elem_id="florence2_unload_btn1_2")
+                    # output
+                    with gr.Column(variant="panel"):
+                        florence2_output_img1 = gr.Image(label=I18N["Output Image"][default_lang], type="pil", height=600, object_fit="contain", elem_id="florence2_output_image1", interactive=False)
+                        florence2_output_mask_img1 = gr.Image(label=I18N["Output Mask Image"][default_lang], type="pil", height=600, object_fit="contain", elem_id="florence2_output_mask_image1", interactive=False)
+                        with gr.Row():
+                            florence2_save_output_img_btn = gr.Button(I18N["Save Output Image"][default_lang], variant="secondary", elem_id="florence2_save_output_img_btn1")
+                            florence2_save_mask_img_btn = gr.Button(I18N["Save Mask Image"][default_lang], variant="secondary", elem_id="florence2_save_mask_img_btn1")
+                        florence2_tags_output1_2 = gr.Textbox(label=I18N["Extracted Tags"][default_lang], lines=5, interactive=False, elem_id="florence2_extracted_tags1_2")
+                    # 事件绑定
+                    florence2_interrogate_btn1_2.click(
+                        fn=partial(florence2_backend.predict, output_type="image"),
+                        inputs=[input_image_florence2_1_2, florence2_model_selector1_2, florence2_lora_selector1_2, florence2_task1_2, florence2_text_input1_2, florence2_num_beams1_2, florence2_max_token1_2, florence2_dtype1_2, florence2_attention1_2, florence2_keep_model_loaded1_2, florence2_show_json1_2, florence2_fill_mask1],
+                        outputs=[florence2_output_img1, florence2_output_mask_img1, florence2_tags_output1_2],
+                    )
+                    florence2_unload_btn1_2.click(fn=florence2_backend.unload_model, inputs=[], outputs=[])
+                    florence2_save_output_img_btn.click(fn=partial(save_image, img_type="output"), inputs=[florence2_output_img1], outputs=[])
+                    florence2_save_mask_img_btn.click(fn=partial(save_image, img_type="mask"), inputs=[florence2_output_mask_img1], outputs=[])
 
-            # --- 参数更新 ---
-            tagger_interface.load(
-                fn=sync_opts_to_components,
-                inputs=[],
-                outputs=[
-                    #florence2
-                    florence2_model_selector1,
-                    florence2_lora_selector1,
-                    florence2_task1,
-                    florence2_num_beams1,
-                    florence2_max_token1,
-                    florence2_dtype1,
-                    florence2_attention1,
-                    florence2_fill_mask1,
-                    florence2_keep_model_loaded1,
-                ],
-                show_progress="hidden",
-            )
+        # --- 参数更新 ---
+        tagger_interface.load(
+            fn=sync_opts_to_components,
+            inputs=[],
+            outputs=[
+                # florence2
+                florence2_model_selector1_1,
+                florence2_model_selector1_2,
+                florence2_lora_selector1_1,
+                florence2_lora_selector1_2,
+                florence2_task1_1,
+                florence2_task1_2,
+                florence2_num_beams1_1,
+                florence2_num_beams1_2,
+                florence2_max_token1_1,
+                florence2_max_token1_2,
+                florence2_dtype1_1,
+                florence2_dtype1_2,
+                florence2_attention1_1,
+                florence2_attention1_2,
+                florence2_keep_model_loaded1_1,
+                florence2_keep_model_loaded1_2,
+                florence2_show_json1_1,
+                florence2_show_json1_2,
+                florence2_fill_mask1,
+            ],
+            show_progress="hidden",
+        )
 
     return [(tagger_interface, "Florence2", "Florence2_tab")]
 
@@ -297,23 +388,34 @@ def on_ui_settings():
     # 语言
     shared.opts.add_option("Florence2_language", shared.OptionInfo("English", I18N["Language"][default_lang], gr.Dropdown, {"choices": ["English", "简体中文", "繁體中文"]}, section=section))
     # florence2模型
-    shared.opts.add_option("florence2_model", shared.OptionInfo("microsoft/Florence-2-large-ft", f"florence {I18N["Select Model"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.model_list}, section=section))
+    shared.opts.add_option("florence2_model_text", shared.OptionInfo("microsoft/Florence-2-large-ft", f"florence text {I18N["Select Model"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.model_list}, section=section))
+    shared.opts.add_option("florence2_model_image", shared.OptionInfo("microsoft/Florence-2-large-ft", f"florence image {I18N["Select Model"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.model_list}, section=section))
     # florence2 Lora
-    shared.opts.add_option("florence2_Lora", shared.OptionInfo(None, f"florence {I18N["Select Lora"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.lora_list}, section=section))
+    shared.opts.add_option("florence2_Lora_text", shared.OptionInfo(None, f"florence text {I18N["Select Lora"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.lora_list}, section=section))
+    shared.opts.add_option("florence2_Lora_image", shared.OptionInfo(None, f"florence text {I18N["Select Lora"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.lora_list}, section=section))
     # florence2 task
-    shared.opts.add_option("florence2_task", shared.OptionInfo("caption", f"florence {I18N["Select Task"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.tasks}, section=section))
+    shared.opts.add_option("florence2_task_text", shared.OptionInfo("caption", f"florence text {I18N["Select Task"][default_lang]}", gr.Dropdown, {"choices": ["caption", "detailed_caption", "more_detailed_caption", "ocr", "docvqa(need text_input)", "prompt_gen_tags", "prompt_gen_mixed_caption", "prompt_gen_analyze", "prompt_gen_mixed_caption_plus"]}, section=section))
+    shared.opts.add_option("florence2_task_image", shared.OptionInfo("region_caption", f"florence text {I18N["Select Task"][default_lang]}", gr.Dropdown, {"choices": ["region_caption", "dense_region_caption", "region_proposal", "caption_to_phrase_grounding(need text_input)", "referring_expression_segmentation(need text_input)", "ocr_with_region"]}, section=section))
     # florence2 num_beams
-    shared.opts.add_option("florence2_num_beams", shared.OptionInfo(3, f"florence {I18N["Num Beams"][default_lang]}", gr.Number, {"minimum": 1, "maximum": 10}, section=section))
+    shared.opts.add_option("florence2_num_beams_text", shared.OptionInfo(3, f"florence text {I18N["Num Beams"][default_lang]}", gr.Number, {"minimum": 1, "maximum": 10}, section=section))
+    shared.opts.add_option("florence2_num_beams_image", shared.OptionInfo(3, f"florence text {I18N["Num Beams"][default_lang]}", gr.Number, {"minimum": 1, "maximum": 10}, section=section))
     # florence2 max_token
-    shared.opts.add_option("florence2_max_token", shared.OptionInfo(1024, f"florence {I18N["Max token"][default_lang]}", gr.Number, {"minimum": 1, "maximum": 4096}, section=section))
+    shared.opts.add_option("florence2_max_token_text", shared.OptionInfo(1024, f"florence text {I18N["Max token"][default_lang]}", gr.Number, {"minimum": 1, "maximum": 4096}, section=section))
+    shared.opts.add_option("florence2_max_token_image", shared.OptionInfo(1024, f"florence text {I18N["Max token"][default_lang]}", gr.Number, {"minimum": 1, "maximum": 4096}, section=section))
     # florence2 dtype
-    shared.opts.add_option("florence2_dtype", shared.OptionInfo("fp16", f"florence {I18N["Select Precision"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.dtype}, section=section))
+    shared.opts.add_option("florence2_dtype_text", shared.OptionInfo("fp16", f"florence text {I18N["Select Precision"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.dtype}, section=section))
+    shared.opts.add_option("florence2_dtype_image", shared.OptionInfo("fp16", f"florence text {I18N["Select Precision"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.dtype}, section=section))
     # florence2 attention
-    shared.opts.add_option("florence2_attention", shared.OptionInfo("sdpa", f"florence {I18N["Select Attention Implementation"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.attention_list}, section=section))
-    # florence2 fill_mask
-    shared.opts.add_option("florence2_fill_mask", shared.OptionInfo(True, f"florence {I18N["Fill Mask"][default_lang]}", gr.Checkbox, {"interactive": True}, section=section))
+    shared.opts.add_option("florence2_attention_text", shared.OptionInfo("sdpa", f"florence text {I18N["Select Attention Implementation"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.attention_list}, section=section))
+    shared.opts.add_option("florence2_attention_image", shared.OptionInfo("sdpa", f"florence text {I18N["Select Attention Implementation"][default_lang]}", gr.Dropdown, {"choices": florence2_backend.attention_list}, section=section))
     # florence2 keep_model_loaded
-    shared.opts.add_option("florence2_keep_model_loaded", shared.OptionInfo(False, f"florence {I18N["Keep Model Loaded"][default_lang]}", gr.Checkbox, {"interactive": True}, section=section))
+    shared.opts.add_option("florence2_keep_model_loaded_text", shared.OptionInfo(False, f"florence text {I18N["Keep Model Loaded"][default_lang]}", gr.Checkbox, {"interactive": True}, section=section))
+    shared.opts.add_option("florence2_keep_model_loaded_image", shared.OptionInfo(False, f"florence text {I18N["Keep Model Loaded"][default_lang]}", gr.Checkbox, {"interactive": True}, section=section))
+    # florence2 show json
+    shared.opts.add_option("florence2_show_json_text", shared.OptionInfo(False, f"florence text {I18N["Show JSON"][default_lang]}", gr.Checkbox, {"interactive": True}, section=section))
+    shared.opts.add_option("florence2_show_json_image", shared.OptionInfo(False, f"florence text {I18N["Show JSON"][default_lang]}", gr.Checkbox, {"interactive": True}, section=section))
+    # florence2 fill_mask
+    shared.opts.add_option("florence2_fill_mask", shared.OptionInfo(True, f"florence image {I18N["Fill Mask"][default_lang]}", gr.Checkbox, {"interactive": True}, section=section))
 
 
 # ----------------------------------------------------------------
@@ -340,7 +442,7 @@ with open(EXTENSION_DIR / "language.json", "r", encoding="utf-8") as f1:
 try:
     default_lang = shared.opts.Florence2_language
 except:
-    print('[Tagger-all] defalut English of the UI.')
+    print("[Tagger-all] defalut English of the UI.")
     default_lang = "English"
 
 # --main--
