@@ -3,15 +3,17 @@ A web UI plugin for a Florence2 reverse inference model，support sd-webui-forge
 
 ## Interface
 <div align="center">
-  <img src="example/1.jpg" alt="1">
-  <!-- <p><em>Single Image</em></p> -->
+  <img src="example/text.jpg" alt="text">
+  <p><em>text</em></p>
 </div>
 <div align="center">
-  <img src="example/2.jpg" alt="2">
-  <!-- <p><em>Batch Process</em></p> -->
+  <img src="example/image.jpg" alt="image">
+  <p><em>image</em></p>
 </div>
 
 <br><br>
+Support batch process;
+
 Place model files in `SD-WebUI-Forge/model/tagger_models`;
 
 You need to download all of config file for Florence model.
